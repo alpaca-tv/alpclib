@@ -29,3 +29,14 @@ func TestRezkaListSeries(t *testing.T) {
 		t.Error("Empty series")
 	}
 }
+
+func TestRezkaGetFilm(t *testing.T) {
+	r := Rezka{}
+	film, err := r.GetFilm("aHR0cHM6Ly9yZXprYS5hZy9maWxtcy9hY3Rpb24vMjM5LWdhcnJpLXBvdHRlci1pLWRhcnktc21lcnRpLWNoYXN0LWktMjAxMC5odG1s")
+	if err != nil {
+		t.Error(err)
+	}
+	if len(film.Sources) == 0 {
+		t.Error("Empty sources")
+	}
+}

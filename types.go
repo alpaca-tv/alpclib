@@ -21,7 +21,7 @@ type Film struct {
 
 type FilmSource struct {
 	Voicecover string
-	Quality    int
+	Quality    string
 	URL        string
 }
 
@@ -41,7 +41,7 @@ type SeriesSource struct {
 	Voicecover string
 	Season     int
 	Series     int
-	Quality    int
+	Quality    string
 	URL        string
 }
 
