@@ -1,6 +1,7 @@
 package alpclib
 
 import (
+	"encoding/base64"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -45,12 +46,15 @@ func (*Rezka) ListFilms(p *ListParameters) ([]Film, error) {
 		if entrytype != "Фильм" {
 			return
 		}
+		pageurl, _ := s.Find("a").Attr("href")
+		id := base64.StdEncoding.EncodeToString([]byte(pageurl))
 		poster, _ := s.Find("img").Attr("src")
 		name := s.Find(".b-content__inline_item-link").Find("a").Text()
 		descrow := strings.Split(s.Find(".b-content__inline_item-link").Find("div").Text(), ", ")
 		year, _ := strconv.Atoi(descrow[0])
 		country := descrow[1]
 		films = append(films, Film{
+			ID:        id,
 			Name:      name,
 			PosterURL: poster,
 			Year:      year,
@@ -94,12 +98,15 @@ func (*Rezka) ListSeries(p *ListParameters) ([]Series, error) {
 		if entrytype != "Сериал" {
 			return
 		}
+		pageurl, _ := s.Find("a").Attr("href")
+		id := base64.StdEncoding.EncodeToString([]byte(pageurl))
 		poster, _ := s.Find("img").Attr("src")
 		name := s.Find(".b-content__inline_item-link").Find("a").Text()
 		descrow := strings.Split(s.Find(".b-content__inline_item-link").Find("div").Text(), ", ")
 		year, _ := strconv.Atoi(descrow[0])
 		country := descrow[1]
 		series = append(series, Series{
+			ID:        id,
 			Name:      name,
 			PosterURL: poster,
 			EndYear:   year,
