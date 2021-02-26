@@ -6,11 +6,14 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
+
+var streamsregex = regexp.MustCompile(`(?m)"streams":"([\[\]\:\\\/\.\,\w ]+)"`)
 
 type Rezka struct{}
 
@@ -204,6 +207,27 @@ func (r *Rezka) GetFilm(id string) (Film, error) {
 			})
 		}
 	})
+	if len(sources) == 0 {
+		pagehtml, _ := doc.Html()
+		streams := streamsregex.FindAllString(pagehtml, -1)
+		if len(streams) != 0 {
+			rawsources := strings.Split(streams[0], ",")
+			for _, rawsource := range rawsources {
+				quality, source, err := r.RawSourceQuality(rawsource)
+				if err != nil {
+					continue
+				}
+				videourls := strings.Split(source, " or ")
+				videourl := videourls[len(videourls)-1]
+				videourl = strings.ReplaceAll(videourl, "\\", "")
+				sources = append(sources, FilmSource{
+					Voicecover: "Default",
+					Quality:    quality,
+					URL:        videourl,
+				})
+			}
+		}
+	}
 	return Film{
 		ID:          id,
 		Name:        name,
