@@ -14,6 +14,7 @@ import (
 )
 
 var streamsregex = regexp.MustCompile(`(?m)"streams":"([\[\]\:\\\/\.\,\w ]+)"`)
+var tidregex = regexp.MustCompile(`(?m)initCDNSeriesEvents\(\w+\, (\w+)`)
 
 type Rezka struct{}
 
@@ -324,9 +325,61 @@ func (r *Rezka) GetSeries(id string, season int, episode int) (Series, error) {
 					URL:        "",
 				})
 			}
-
 		})
 	})
+	if len(sources) == 0 {
+		pagehtml, _ := doc.Html()
+		tidstr := tidregex.FindAllStringSubmatch(pagehtml, -1)[0][1]
+		_ = tidstr
+		doc.Find(".b-simple_episode__item").Each(func(i int, s *goquery.Selection) {
+			seasonstr, _ := s.Attr("data-season_id")
+			episodestr, _ := s.Attr("data-episode_id")
+			_season, _ := strconv.Atoi(seasonstr)
+			_episode, _ := strconv.Atoi(episodestr)
+			if (season == 0 || season == _season) && (episode == 0 || episode == _episode) {
+				data := url.Values{}
+				data.Set("id", dataidstr)
+				data.Set("translator_id", tidstr)
+				data.Set("season", seasonstr)
+				data.Set("episode", episodestr)
+				data.Set("action", "get_stream")
+				req, _ := http.NewRequest("POST", "https://rezka.ag/ajax/get_cdn_series/", strings.NewReader(data.Encode()))
+				req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+				req.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+				res, err := http.DefaultClient.Do(req)
+				if err != nil {
+					return
+				}
+				defer res.Body.Close()
+				var respdata map[string]interface{}
+				json.NewDecoder(res.Body).Decode(&respdata)
+				rawsources := strings.Split(respdata["url"].(string), ",")
+				for _, rawsource := range rawsources {
+					quality, source, err := r.rawSourceQuality(rawsource)
+					if err != nil {
+						continue
+					}
+					videourls := strings.Split(source, " or ")
+					videourl := videourls[len(videourls)-1]
+					sources = append(sources, SeriesSource{
+						Voicecover: "Default",
+						Season:     _season,
+						Episode:    _episode,
+						Quality:    quality,
+						URL:        videourl,
+					})
+				}
+			} else {
+				sources = append(sources, SeriesSource{
+					Voicecover: "Default",
+					Season:     _season,
+					Episode:    _episode,
+					Quality:    "",
+					URL:        "",
+				})
+			}
+		})
+	}
 	return Series{
 		ID:          id,
 		Name:        name,

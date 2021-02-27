@@ -1,7 +1,6 @@
 package alpclib
 
 import (
-	"log"
 	"testing"
 )
 
@@ -51,5 +50,11 @@ func TestRezkaGetSeries(t *testing.T) {
 	if len(series.Sources) == 0 {
 		t.Error("Empty sources")
 	}
-	log.Println(series)
+	series2, err := r.GetSeries("aHR0cHM6Ly9yZXprYS5hZy9jYXJ0b29ucy9tdWx0c2VyaWVzLzc5NTctcG8tdHUtc3Rvcm9udS1pemdvcm9kaS5odG1s", 1, 1)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(series2.Sources) == 0 {
+		t.Error("Empty sources")
+	}
 }
