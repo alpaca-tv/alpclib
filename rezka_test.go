@@ -1,6 +1,7 @@
 package alpclib
 
 import (
+	"log"
 	"testing"
 )
 
@@ -39,4 +40,16 @@ func TestRezkaGetFilm(t *testing.T) {
 	if len(film.Sources) == 0 {
 		t.Error("Empty sources")
 	}
+}
+
+func TestRezkaGetSeries(t *testing.T) {
+	r := Rezka{}
+	series, err := r.GetSeries("aHR0cHM6Ly9yZXprYS5hZy9zZXJpZXMvZmFudGFzeS80NS1pZ3JhLXByZXN0b2xvdi0yMDExLWdvdC1vbmxpbmUuaHRtbA==", 1, 1)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(series.Sources) == 0 {
+		t.Error("Empty sources")
+	}
+	log.Println(series)
 }
