@@ -100,8 +100,8 @@ func (*Rezka) ListSeries(p *ListParameters) ([]Series, error) {
 	}
 	series := []Series{}
 	doc.Find(".b-content__inline_item").Each(func(i int, s *goquery.Selection) {
-		entrytype := s.Find(".entity").Text()
-		if entrytype != "Сериал" {
+		info := s.Find(".info").Text()
+		if !strings.Contains(info, "сери") {
 			return
 		}
 		pageurl, _ := s.Find("a").Attr("href")

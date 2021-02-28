@@ -28,6 +28,15 @@ func TestRezkaListSeries(t *testing.T) {
 	if len(series) == 0 {
 		t.Error("Empty series")
 	}
+	series2, err := r.ListSeries(&ListParameters{
+		Search: "По ту сторону изгороди",
+	})
+	if err != nil {
+		t.Error(err)
+	}
+	if len(series2) == 0 {
+		t.Error("Empty series")
+	}
 }
 
 func TestRezkaGetFilm(t *testing.T) {
