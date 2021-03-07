@@ -24,6 +24,10 @@ type rezkaEpisode struct {
 }
 
 func (*Rezka) ListFilms(p *ListParameters) ([]Film, error) {
+	// Defaults
+	if p.Page == 0 {
+		p.Page = 1
+	}
 	var listurl *url.URL
 	if p.Search != "" {
 		_url, _ := url.Parse("https://rezka.ag/search")
@@ -34,7 +38,7 @@ func (*Rezka) ListFilms(p *ListParameters) ([]Film, error) {
 		_url.RawQuery = q.Encode()
 		listurl = _url
 	} else {
-		_url, _ := url.Parse("https://rezka.ag/films/")
+		_url, _ := url.Parse("https://rezka.ag/films/page/" + strconv.Itoa(p.Page))
 		q := _url.Query()
 		if p.OrderBy != "" {
 			q.Set("filter", p.OrderBy)
@@ -71,6 +75,10 @@ func (*Rezka) ListFilms(p *ListParameters) ([]Film, error) {
 }
 
 func (*Rezka) ListSeries(p *ListParameters) ([]Series, error) {
+	// Defaults
+	if p.Page == 0 {
+		p.Page = 1
+	}
 	var listurl *url.URL
 	if p.Search != "" {
 		_url, _ := url.Parse("https://rezka.ag/search")
@@ -81,7 +89,7 @@ func (*Rezka) ListSeries(p *ListParameters) ([]Series, error) {
 		_url.RawQuery = q.Encode()
 		listurl = _url
 	} else {
-		_url, _ := url.Parse("https://rezka.ag/series/")
+		_url, _ := url.Parse("https://rezka.ag/series/page/" + strconv.Itoa(p.Page))
 		q := _url.Query()
 		if p.OrderBy != "" {
 			q.Set("filter", p.OrderBy)
