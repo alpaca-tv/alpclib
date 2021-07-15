@@ -275,6 +275,7 @@ func (r *Rezka) GetSeries(id string, season int, episode int) (Series, error) {
 	dataidstr, _ := doc.Find(".b-simple_episode__item").First().Attr("data-id")
 	year := 0
 	country := ""
+	rating := 0.0
 	name := doc.Find(".b-post__title").Find("h1").Text()
 	description := doc.Find(".b-post__description_text").Text()
 	poster, _ := doc.Find(".b-sidecover").Find("img").Attr("src")
@@ -288,6 +289,25 @@ func (r *Rezka) GetSeries(id string, season int, episode int) (Series, error) {
 		if strings.Contains(nodehtml, "Страна") {
 			country = s.Find("a").First().Text()
 		}
+		if strings.Contains(nodehtml, "Рейтинги") {
+			s.Find(".b-post__info_rates").Find(".bold").Each(func(i int, s *goquery.Selection) {
+				rating, _ = strconv.ParseFloat(s.Text(), 64)
+			})
+		}
+	})
+	related := []Series{}
+	doc.Find(".b-post__partcontent").Find(".b-post__partcontent_item").Each(func(i int, s *goquery.Selection) {
+		if s.Find("a").Length() == 0 {
+			return
+		}
+		startyear, _ := strconv.Atoi(strings.Split(s.Find(".year").Text(), " ")[0])
+		rating, _ := strconv.ParseFloat(s.Find(".rating").Text(), 64)
+		related = append(related, Series{
+			ID:        base64.StdEncoding.EncodeToString([]byte(s.Find("a").AttrOr("href", ""))),
+			Name:      s.Find("a").Text(),
+			StartYear: startyear,
+			Rating:    rating,
+		})
 	})
 	sources := []SeriesSource{}
 	doc.Find(".b-translator__item").Each(func(i int, s *goquery.Selection) {
@@ -417,6 +437,8 @@ func (r *Rezka) GetSeries(id string, season int, episode int) (Series, error) {
 		PosterURL:   poster,
 		StartYear:   year,
 		Country:     country,
+		Rating:      rating,
+		Related:     related,
 		Sources:     sources,
 	}, nil
 }
