@@ -16,6 +16,7 @@ type Film struct {
 	Rating      float64
 	Country     string
 	Genres      []string
+	Related     []Film // List of ids
 	Sources     []FilmSource
 }
 

@@ -154,6 +154,7 @@ func (r *Rezka) GetFilm(id string) (Film, error) {
 	}
 	year := 0
 	country := ""
+	rating := 0.0
 	name := doc.Find(".b-post__title").Find("h1").Text()
 	description := doc.Find(".b-post__description_text").Text()
 	poster, _ := doc.Find(".b-sidecover").Find("img").Attr("src")
@@ -167,6 +168,25 @@ func (r *Rezka) GetFilm(id string) (Film, error) {
 		if strings.Contains(nodehtml, "Страна") {
 			country = s.Find("a").First().Text()
 		}
+		if strings.Contains(nodehtml, "Рейтинги") {
+			s.Find(".b-post__info_rates").Find(".bold").Each(func(i int, s *goquery.Selection) {
+				rating, _ = strconv.ParseFloat(s.Text(), 64)
+			})
+		}
+	})
+	related := []Film{}
+	doc.Find(".b-post__partcontent").Find(".b-post__partcontent_item").Each(func(i int, s *goquery.Selection) {
+		if s.Find("a").Length() == 0 {
+			return
+		}
+		year, _ := strconv.Atoi(strings.Split(s.Find(".year").Text(), " ")[0])
+		rating, _ := strconv.ParseFloat(s.Find(".rating").Text(), 64)
+		related = append(related, Film{
+			ID:     base64.StdEncoding.EncodeToString([]byte(s.Find("a").AttrOr("href", ""))),
+			Name:   s.Find("a").Text(),
+			Year:   year,
+			Rating: rating,
+		})
 	})
 	sources := []FilmSource{}
 	doc.Find(".b-translator__item").Each(func(i int, s *goquery.Selection) {
@@ -234,8 +254,10 @@ func (r *Rezka) GetFilm(id string) (Film, error) {
 		Name:        name,
 		Description: description,
 		PosterURL:   poster,
+		Rating:      rating,
 		Year:        year,
 		Country:     country,
+		Related:     related,
 		Sources:     sources,
 	}, nil
 }
